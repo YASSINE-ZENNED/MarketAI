@@ -34,7 +34,7 @@ class _ProductImagesState extends State<ProductImages> {
           children: [
             ...List.generate(
               widget.product.images.length,
-              (index) => SmallProductImage(
+                  (index) => SmallProductImage(
                 isSelected: index == selectedImage,
                 press: () {
                   setState(() {
@@ -54,9 +54,9 @@ class _ProductImagesState extends State<ProductImages> {
 class SmallProductImage extends StatefulWidget {
   const SmallProductImage(
       {super.key,
-      required this.isSelected,
-      required this.press,
-      required this.image});
+        required this.isSelected,
+        required this.press,
+        required this.image});
 
   final bool isSelected;
   final VoidCallback press;

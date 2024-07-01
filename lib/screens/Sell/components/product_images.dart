@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../constants.dart';
-import '../../details/components/product_images.dart';
+import 'SmallProductImage.dart';
 
 class ProductImages extends StatefulWidget {
-  const ProductImages({Key? key}) : super(key: key);
 
   @override
   _ProductImagesState createState() => _ProductImagesState();
@@ -33,9 +32,12 @@ class _ProductImagesState extends State<ProductImages> {
     return Column(
       children: [
         _images.isEmpty
-            ? Placeholder(
-          fallbackHeight: 238,
-          fallbackWidth: 238,
+            ? SizedBox(
+          width: 238,
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: Placeholder(),
+          ),
         )
             : SizedBox(
           width: 238,
@@ -44,7 +46,6 @@ class _ProductImagesState extends State<ProductImages> {
             child: Image.file(_images[selectedImage]),
           ),
         ),
-        // SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -57,7 +58,7 @@ class _ProductImagesState extends State<ProductImages> {
                     selectedImage = index;
                   });
                 },
-                image: _images[index],
+                imageFile: _images[index],
               ),
             ),
           ],

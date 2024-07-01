@@ -4,15 +4,28 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../constants.dart';
 import '../../../models/Product.dart';
 
-class ProductDescription extends StatelessWidget {
+class ProductDescription extends StatefulWidget {
   const ProductDescription({
     Key? key,
-    required this.product,
     this.pressOnSeeMore,
   }) : super(key: key);
 
-  final Product product;
   final GestureTapCallback? pressOnSeeMore;
+
+  @override
+  _ProductDescriptionState createState() => _ProductDescriptionState();
+}
+
+class _ProductDescriptionState extends State<ProductDescription> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,70 +34,42 @@ class ProductDescription extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            product.title,
+          child: TextField(
+            controller: _titleController,
+            decoration: InputDecoration(
+              labelText: "Product Title",
+              border: OutlineInputBorder(),
+            ),
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            width: 48,
-            decoration: BoxDecoration(
-              color: product.isFavourite
-                  ? const Color(0xFFFFE6E6)
-                  : const Color(0xFFF5F6F9),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-              ),
+        SizedBox(height: 12), // Add some space between fields
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: TextField(
+            controller: _descriptionController,
+            decoration: InputDecoration(
+              labelText: "Product Description",
+              border: OutlineInputBorder(),
             ),
-            child: SvgPicture.asset(
-              "assets/icons/Heart Icon_2.svg",
-              colorFilter: ColorFilter.mode(
-                  product.isFavourite
-                      ? const Color(0xFFFF4848)
-                      : const Color(0xFFDBDEE4),
-                  BlendMode.srcIn),
-              height: 16,
-            ),
+            maxLines: 3, // Allows multiple lines for the description
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
+        SizedBox(height: 12), // Add some space between fields
+
         Padding(
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 64,
-          ),
-          child: Text(
-            product.description,
-            maxLines: 3,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: TextField(
+            controller: _titleController,
+            decoration: InputDecoration(
+              labelText: "Price",
+              border: OutlineInputBorder(),
+            ),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
-          ),
-          child: GestureDetector(
-            onTap: () {},
-            child: const Row(
-              children: [
-                Text(
-                  "See More Detail",
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600, color: kPrimaryColor),
-                ),
-                SizedBox(width: 5),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 12,
-                  color: kPrimaryColor,
-                ),
-              ],
-            ),
-          ),
-        )
+
       ],
     );
   }

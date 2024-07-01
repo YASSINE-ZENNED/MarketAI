@@ -1,23 +1,23 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop_app/screens/cart/cart_screen.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../../constants.dart';
 import '../../models/Product.dart';
+import '../cart/cart_screen.dart';
+import 'components/SmallProductImage.dart';
 import 'components/color_dots.dart';
 import 'components/product_description.dart';
 import 'components/product_images.dart';
 import 'components/top_rounded_container.dart';
 
 class CreateSellCard extends StatelessWidget {
+  const CreateSellCard({Key? key}) : super(key: key);
   static String routeName = "/CreateSellCard";
-
-  const CreateSellCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final ProductDetailsArguments agrs =
-    ModalRoute.of(context)!.settings.arguments as ProductDetailsArguments;
-    final product = agrs.product;
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -44,57 +44,56 @@ class CreateSellCard extends StatelessWidget {
             ),
           ),
         ),
-        actions: [
-          Row(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(right: 20),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-
-              ),
-            ],
-          ),
-        ],
       ),
       body: ListView(
         children: [
-          ProductImages(product: product),
+          ProductImages(),
           TopRoundedContainer(
             color: Colors.white,
             child: Column(
               children: [
                 ProductDescription(
-                  product: product,
                   pressOnSeeMore: () {},
                 ),
-                TopRoundedContainer(
-                  color: const Color(0xFFF6F7F9),
-                  child: Column(
-                    children: [
-                      ColorDots(product: product),
-                    ],
-                  ),
-                ),
+
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: TopRoundedContainer(
-        color: Colors.white,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, CartScreen.routeName);
-              },
-              child: const Text("Add To Cart"),
+
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: BottomAppBar(
+          child: Container(
+            color: const Color(0xFFF5F6F9),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 8, // Takes 80% of the available space
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle action for the first button
+                      },
+                      child: const Text("Post product for sale"),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3, // Takes 20% of the available space
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle action for the second button
+                      },
+                      child: const Text("AI"),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -103,8 +102,3 @@ class CreateSellCard extends StatelessWidget {
   }
 }
 
-class ProductDetailsArguments {
-  final Product product;
-
-  ProductDetailsArguments({required this.product});
-}

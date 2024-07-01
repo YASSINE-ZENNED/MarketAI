@@ -5,15 +5,15 @@ import '../../../constants.dart';
 
 class SmallProductImage extends StatefulWidget {
   const SmallProductImage({
-    super.key,
+    Key? key,
     required this.isSelected,
     required this.press,
-    required this.image,
-  });
+    required this.imageFile,
+  }) : super(key: key);
 
   final bool isSelected;
   final VoidCallback press;
-  final File image;
+  final File imageFile;
 
   @override
   State<SmallProductImage> createState() => _SmallProductImageState();
@@ -37,7 +37,7 @@ class _SmallProductImageState extends State<SmallProductImage> {
             color: kPrimaryColor.withOpacity(widget.isSelected ? 1 : 0),
           ),
         ),
-        child: Image.file(widget.image),
+        child: Image.file(widget.imageFile),
       ),
     );
   }
