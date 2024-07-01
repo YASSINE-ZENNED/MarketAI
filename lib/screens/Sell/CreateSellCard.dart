@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
 import '../../models/Product.dart';
@@ -26,7 +28,7 @@ class _CreateSellCardState extends State<CreateSellCard> {
   late TextEditingController _descriptionController;
   TextEditingController keywordsController = TextEditingController();
   int selectedImage = 0;
-  List<File> _images = [];
+  List<XFile> _pickedImages = [];
 
   Future<void> _pickImages() async {
     final ImagePicker _picker = ImagePicker();
@@ -34,11 +36,12 @@ class _CreateSellCardState extends State<CreateSellCard> {
 
     if (pickedFiles != null && pickedFiles.isNotEmpty) {
       setState(() {
-        _images = pickedFiles.map((file) => File(file.path)).toList();
+        _pickedImages = pickedFiles;
         selectedImage = 0;  // Reset to the first image
       });
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -85,43 +88,42 @@ class _CreateSellCardState extends State<CreateSellCard> {
       ),
       body: ListView(
         children: [
-            _images.isEmpty
-                ? SizedBox(
-              width: 238,
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Placeholder(),
-              ),
-            )
-                : SizedBox(
-              width: 238,
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Image.file(_images[selectedImage]),
-              ),
+          _pickedImages.isEmpty
+              ? SizedBox(
+            width: 238,
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: Placeholder(),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ...List.generate(
-                  _images.length,
-                      (index) => SmallProductImage(
-                    isSelected: index == selectedImage,
-                    press: () {
-                      setState(() {
-                        selectedImage = index;
-                      });
-                    },
-                    imageFile: _images[index],
-                  ),
+          )
+              : SizedBox(
+            width: 238,
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: Image.file(File(_pickedImages[selectedImage].path)),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ...List.generate(
+                _pickedImages.length,
+                    (index) => SmallProductImage(
+                  isSelected: index == selectedImage,
+                  press: () {
+                    setState(() {
+                      selectedImage = index;
+                    });
+                  },
+                  imageFile: File(_pickedImages[index].path),
                 ),
-              ],
-            ),
-            ElevatedButton(
-              onPressed: _pickImages,
-              child: Text("Pick Images"),
-            ),
-
+              ),
+            ],
+          ),
+          ElevatedButton(
+            onPressed: _pickImages,
+            child: Text("Pick Images"),
+          ),
           TopRoundedContainer(
             color: Colors.white,
             child: Column(
@@ -135,10 +137,10 @@ class _CreateSellCardState extends State<CreateSellCard> {
                       labelText: "Product Title",
                       border: OutlineInputBorder(),
                     ),
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.headline6,
                   ),
                 ),
-                SizedBox(height: 12), // Add some space between fields
+                SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
@@ -147,12 +149,11 @@ class _CreateSellCardState extends State<CreateSellCard> {
                       labelText: "Product Description",
                       border: OutlineInputBorder(),
                     ),
-                    maxLines: 3, // Allows multiple lines for the description
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    maxLines: 3,
+                    style: Theme.of(context).textTheme.bodyText2,
                   ),
                 ),
-                SizedBox(height: 12), // Add some space between fields
-
+                SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
@@ -160,7 +161,7 @@ class _CreateSellCardState extends State<CreateSellCard> {
                       labelText: "Price",
                       border: OutlineInputBorder(),
                     ),
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.headline6,
                   ),
                 ),
               ],
@@ -175,12 +176,11 @@ class _CreateSellCardState extends State<CreateSellCard> {
           child: Row(
             children: [
               Expanded(
-                flex: 8, // Takes 80% of the available space
+                flex: 8,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle action for the first button
                       _postProductForSale();
                     },
                     child: const Text("Post product for sale"),
@@ -188,12 +188,11 @@ class _CreateSellCardState extends State<CreateSellCard> {
                 ),
               ),
               Expanded(
-                flex: 3, // Takes 20% of the available space
+                flex: 3,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle action for the second button
                       _showAIDialog(context);
                     },
                     child: const Text("AI"),
@@ -226,7 +225,7 @@ class _CreateSellCardState extends State<CreateSellCard> {
                   IconButton(
                     icon: Icon(Icons.close),
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     },
                   ),
                 ],
@@ -240,13 +239,56 @@ class _CreateSellCardState extends State<CreateSellCard> {
               ),
               actions: <Widget>[
                 ElevatedButton(
-                  onPressed: () {
-                    // Handle keyword generation logic
-                    setState(() {
-                      _titleController.text = "CreateSellCard";
-                      _descriptionController.text = "test test";
-                    });
-                    Navigator.of(context).pop(); // Close the dialog
+                  onPressed: () async {
+                    // Prepare data to send
+                    String apiUrl = 'https://eff9-165-51-95-20.ngrok-free.app/DescribeForClient';
+
+                    try {
+                      // Create multipart request for uploading images
+                      var request = http.MultipartRequest('GET', Uri.parse(apiUrl));
+
+                      // Add images
+                      for (var image in _pickedImages) {
+                        request.files.add(await http.MultipartFile.fromPath('image', image.path));
+                      }
+
+                      // Add keywords as a field
+                      request.fields['keywords'] = keywordsController.text.trim();
+
+                      // Send the request
+                      var response = await request.send();
+
+                      // Check the response status
+                      if (response.statusCode == 200) {
+                        var responseBody = await response.stream.bytesToString();
+                        print('API Response: $responseBody');
+                        List<String> lines = responseBody.split('\n');
+
+                        // Extract the first line
+                        String firstLine = lines.first;
+
+                        // Join the remaining lines (excluding the first)
+                        String rest = lines.skip(1).join('\n');
+
+                        print("API Response - First line: $firstLine");
+                        print("API Response - Rest: $rest");
+
+                        setState(() {
+                          _titleController.text = firstLine;
+                          _descriptionController.text = rest;
+                        });
+                        // Handle API response
+                      } else {
+                        print('Failed to send data. Status code: ${response.statusCode}');
+                      }
+                    } catch (e) {
+                      print('Error sending data: $e');
+                    }
+
+
+
+
+                    Navigator.of(context).pop();
                   },
                   child: Text('Generate'),
                 ),
