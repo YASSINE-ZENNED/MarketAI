@@ -5,8 +5,9 @@ import '../../../constants.dart';
 import '../../../models/Product.dart';
 
 class ProductDescription extends StatefulWidget {
-  const ProductDescription({
+  const ProductDescription(String productName, String productDescription, {
     Key? key,
+
     this.pressOnSeeMore,
   }) : super(key: key);
 
