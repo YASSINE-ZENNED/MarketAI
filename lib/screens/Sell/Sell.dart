@@ -1,27 +1,40 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class SellItemScreen extends StatefulWidget {
-  const SellItemScreen({Key? key}) : super(key: key);
-  static String routeName = "/sell";
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart'; // Import for image picker
+
+class CreateItemScreen extends StatefulWidget {
+  static String routeName = "/create-item";
+
+  const CreateItemScreen({super.key});
 
   @override
-  State<SellItemScreen> createState() => _SellItemScreenState();
+  State<CreateItemScreen> createState() => _CreateItemScreenState();
 }
 
-class _SellItemScreenState extends State<SellItemScreen> {
+class _CreateItemScreenState extends State<CreateItemScreen> {
   final _formKey = GlobalKey<FormState>();
-  static String routeName = "/sell";
-
   String _title = "";
   String _description = "";
-  double _price = 0.0;
-  bool _isNew = false; // Checkbox for new/used item
+  double _price = 0.0; // You can add a price field if needed
+  XFile? _imageFile; // To store the selected image
+
+  // Function to launch image picker
+  Future<void> _pickImage() async {
+    final imagePicker = ImagePicker();
+    final pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedImage != null) {
+        _imageFile = pickedImage;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sell Your Item"),
+        title: const Text("Create Item"),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -29,6 +42,17 @@ class _SellItemScreenState extends State<SellItemScreen> {
           key: _formKey,
           child: Column(
             children: [
+              const SizedBox(height: 16),
+
+              // Image selection area
+              _imageFile != null
+                  ? Image.file(File(_imageFile!.path)) // Display selected image
+                  : ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text("Choose Image"),
+              ),
+              const SizedBox(height: 16),
+
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: "Title",
@@ -41,6 +65,8 @@ class _SellItemScreenState extends State<SellItemScreen> {
                 },
                 onSaved: (newValue) => _title = newValue!,
               ),
+              const SizedBox(height: 16),
+
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: "Description",
@@ -55,43 +81,25 @@ class _SellItemScreenState extends State<SellItemScreen> {
                 },
                 onSaved: (newValue) => _description = newValue!,
               ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Price",
-                  prefixText: "\$", // Add currency symbol
-                ),
-                keyboardType: TextInputType.number, // For numeric input
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter a price.";
-                  }
-                  return null;
-                },
-                onSaved: (newValue) => _price = double.parse(newValue!),
-              ),
-              Row(
-                children: [
-                  Text("New"),
-                  Checkbox(
-                    value: _isNew,
-                    onChanged: (value) => setState(() => _isNew = value!),
-                  ),
-                  const Text("Used"),
-                ],
-              ),
+              const SizedBox(height: 16),
+
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
+                  if (_formKey.currentState!.validate() && _imageFile != null) {
                     _formKey.currentState!.save();
-                    // TODO: Implement logic to save item information to marketplace
-                    // This might involve sending data to a backend server.
+                    // TODO: Implement logic to save item information including image
+                    // This might involve sending data and image to a backend server.
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Item listing saved!")),
+                      const SnackBar(content: Text("Item created successfully!")),
                     );
                     Navigator.pop(context); // Close the screen
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please select an image and fill out all fields!")),
+                    );
                   }
                 },
-                child: const Text("Sell Item"),
+                child: const Text("Create Item"),
               ),
             ],
           ),

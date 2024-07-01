@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:shop_app/screens/Sell/CreateSellCard.dart';
 import 'package:shop_app/screens/Sell/Sell.dart';
 import 'package:shop_app/screens/products/products_screen.dart';
 
@@ -32,7 +33,7 @@ final Map<String, WidgetBuilder> routes = {
   DetailsScreen.routeName: (context) => const DetailsScreen(),
   CartScreen.routeName: (context) => const CartScreen(),
   ProfileScreen.routeName: (context) => const ProfileScreen(),
-  SellItemScreen.routeName: (context) => const SellItemScreen(),
+  CreateSellCard.routeName: (context) => const CreateSellCard(),
 
 };
 
