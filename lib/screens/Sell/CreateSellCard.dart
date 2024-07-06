@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../../../constants.dart';
 import '../../models/Product.dart';
 import '../cart/cart_screen.dart';
+import '../products/products_screen.dart';
 import 'components/SmallProductImage.dart';
 import 'components/color_dots.dart';
 import 'components/product_description.dart';
@@ -24,11 +25,14 @@ class CreateSellCard extends StatefulWidget {
 }
 
 class _CreateSellCardState extends State<CreateSellCard> {
-  late TextEditingController _titleController;
+  late TextEditingController _titleController ;
   late TextEditingController _descriptionController;
+  late TextEditingController _priceController;
   TextEditingController keywordsController = TextEditingController();
   int selectedImage = 0;
   List<XFile> _pickedImages = [];
+  bool _isNew = false;
+
 
   Future<void> _pickImages() async {
     final ImagePicker _picker = ImagePicker();
@@ -45,8 +49,10 @@ class _CreateSellCardState extends State<CreateSellCard> {
   @override
   void initState() {
     super.initState();
+
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
+    _priceController = TextEditingController();
   }
 
   @override
@@ -54,6 +60,7 @@ class _CreateSellCardState extends State<CreateSellCard> {
     _titleController.dispose();
     _descriptionController.dispose();
     keywordsController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
@@ -90,16 +97,16 @@ class _CreateSellCardState extends State<CreateSellCard> {
         children: [
           _pickedImages.isEmpty
               ? SizedBox(
-            width: 238,
+            width: 150,
             child: AspectRatio(
-              aspectRatio: 1,
+              aspectRatio: 2              ,
               child: Placeholder(),
             ),
           )
               : SizedBox(
-            width: 238,
+            width: 150,
             child: AspectRatio(
-              aspectRatio: 1,
+              aspectRatio: 2,
               child: Image.file(File(_pickedImages[selectedImage].path)),
             ),
           ),
@@ -130,12 +137,11 @@ class _CreateSellCardState extends State<CreateSellCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: TextField(
                     controller: _titleController,
                     decoration: InputDecoration(
                       labelText: "Product Title",
-                      border: OutlineInputBorder(),
                     ),
                     style: Theme.of(context).textTheme.headline6,
                   ),
@@ -147,23 +153,43 @@ class _CreateSellCardState extends State<CreateSellCard> {
                     controller: _descriptionController,
                     decoration: InputDecoration(
                       labelText: "Product Description",
-                      border: OutlineInputBorder(),
                     ),
-                    maxLines: 3,
+                    maxLines:5,
                     style: Theme.of(context).textTheme.bodyText2,
                   ),
                 ),
                 SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: "Price",
-                      border: OutlineInputBorder(),
-                    ),
-                    style: Theme.of(context).textTheme.headline6,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: _priceController,
+
+                          decoration: InputDecoration(
+                            labelText: "Price",
+                          ),
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: SwitchListTile(
+                          title: Text("New" ,             style: Theme.of(context).textTheme.bodyText2!.copyWith(fontSize: 12),                           ),
+                          value: _isNew,
+                          onChanged: (bool value) {
+                            setState(() {
+                              _isNew = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
               ],
             ),
           ),
@@ -207,9 +233,25 @@ class _CreateSellCardState extends State<CreateSellCard> {
   }
 
   void _postProductForSale() {
+    demoProducts.add( Product(
+      id: 20,
+      images: _pickedImages.map((image) => image.path).toList(),
+      colors: [
+        const Color(0xFFF6625E),
+        const Color(0xFF836DB8),
+        const Color(0xFFDECB9C),
+        Colors.white,
+      ],
+      title: _titleController.text,
+      price: double.parse(_priceController.text),
+      description: _descriptionController.text,
+
+    ));
+    Navigator.pushNamed(context, ProductsScreen.routeName);
     // Implement your logic for posting the product for sale
     // This method will be called when "Post product for sale" button is pressed
   }
+
 
   void _showAIDialog(BuildContext context) {
     showDialog(
@@ -284,10 +326,6 @@ class _CreateSellCardState extends State<CreateSellCard> {
                     } catch (e) {
                       print('Error sending data: $e');
                     }
-
-
-
-
                     Navigator.of(context).pop();
                   },
                   child: Text('Generate'),
